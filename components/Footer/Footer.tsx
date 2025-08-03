@@ -1,5 +1,5 @@
+
 import css from "./Footer.module.css";
-import Link from "next/link";
 
 const Footer = () => {
   return (
@@ -9,12 +9,15 @@ const Footer = () => {
         <div className={css.wrap}>
           <p>Ovcharova Victoria</p>
           <p>
-            Contact us:
-            <Link href="victoria.ovcharova93@gmail.com">victoria.ovcharova93@gmail.com</Link>
+            Contact us:{" "}
+            <a href="mailto:victoria.ovcharova93@gmail.com">
+              victoria.ovcharova93@gmail.com
+            </a>
           </p>
         </div>
       </div>
     </footer>
   );
 };
+
 export default Footer;

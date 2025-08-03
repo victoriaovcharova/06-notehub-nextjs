@@ -1,14 +1,16 @@
+// app/notes/Notes.client.tsx
 "use client";
 
 import { useState } from "react";
 import { fetchNotes } from "@/lib/api";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 
 import NoteList from "@/components/NoteList/NoteList";
 import Modal from "@/components/Modal/Modal";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
+import NoteForm from "@/components/NoteForm/NoteForm"; // ⬅️ импорт формы
 import type { NotesResponse } from "@/types/api";
 import css from "./NotesPage.module.css";
 
@@ -29,6 +31,8 @@ export default function NotesClient({
   const [debounceSearchTerm] = useDebounce(searchTerm, 1000);
   const perPage = 12;
 
+  const queryClient = useQueryClient();
+
   const { data } = useQuery<NotesResponse>({
     queryKey: ["notes", debounceSearchTerm, currentPage],
     queryFn: () => fetchNotes(currentPage, debounceSearchTerm, perPage),
@@ -41,6 +45,13 @@ export default function NotesClient({
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  const handleSuccess = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ["notes", debounceSearchTerm, currentPage],
+    });
+    closeModal();
+  };
 
   const handleSearchChange = (newTerm: string) => {
     setSearchTerm(newTerm);
@@ -62,8 +73,14 @@ export default function NotesClient({
           Create note +
         </button>
       </header>
+
       {data && <NoteList notes={data.notes} />}
-      {isModalOpen && <Modal onClose={closeModal} onSuccess={closeModal} />}
+
+      {isModalOpen && (
+        <Modal onClose={closeModal}>
+          <NoteForm onClose={closeModal} onSuccess={handleSuccess} />
+        </Modal>
+      )}
     </div>
   );
 }
